@@ -1,0 +1,649 @@
+{% extends "base.html" %}
+
+{% block title %}{{ e.hostname }} - Endpoint Detail{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">
+        <a href="/page/endpoints" class="text-reset"><i class="ti ti-chevron-left"></i> Endpoint Management</a> / Detail
+      </div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <span class="status-dot-pulse status-{{ e.status|lower }}"></span>
+        {{ e.hostname }}
+        <span class="badge {% if e.health == 'Critical' %}bg-danger-lt{% elif e.health == 'Warning' %}bg-warning-lt{% elif e.health == 'Offline' %}bg-secondary-lt{% else %}bg-success-lt{% endif %} fs-5">
+          {{ e.health }}
+        </span>
+      </h2>
+      <div class="text-secondary small mt-1">
+        <span class="me-3"><i class="ti ti-id"></i> Agent ID: <code>{{ e.agent_id }}</code></span>
+        <span class="me-3"><i class="ti ti-clock"></i> Terakhir Aktif: {{ e.last_seen }}</span>
+        <span><i class="ti ti-device-laptop"></i> {{ e.manufacturer|default:'Unknown Maker' }} {{ e.model|default:'' }}</span>
+      </div>
+    </div>
+    <div class="col-auto ms-auto d-print-none">
+      <div class="btn-list">
+        {% if mesh_url %}
+        <a href="{{ mesh_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-azure">
+          <i class="ti ti-device-desktop-analytics me-1"></i> Remote Support Portal
+        </a>
+        {% endif %}
+        <a href="/page/endpoints" class="btn btn-secondary">
+          <i class="ti ti-arrow-left me-1"></i> Kembali
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="card mb-4">
+  <div class="card-header">
+    <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+      <li class="nav-item">
+        <a href="#tab-overview" class="nav-link {% if active_tab == 'overview' %}active{% endif %}" data-bs-toggle="tab">
+          <i class="ti ti-dashboard me-2"></i> Overview
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#tab-hardware" class="nav-link {% if active_tab == 'hardware' %}active{% endif %}" data-bs-toggle="tab">
+          <i class="ti ti-cpu me-2"></i> Hardware
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#tab-software" class="nav-link {% if active_tab == 'software' %}active{% endif %}" data-bs-toggle="tab">
+          <i class="ti ti-apps me-2"></i> Software ({{ e.software_list|length }})
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#tab-network" class="nav-link {% if active_tab == 'network' %}active{% endif %}" data-bs-toggle="tab">
+          <i class="ti ti-network me-2"></i> Network
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#tab-security" class="nav-link {% if active_tab == 'security' %}active{% endif %}" data-bs-toggle="tab">
+          <i class="ti ti-shield-check me-2"></i> Security
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#tab-usage" class="nav-link {% if active_tab == 'usage' %}active{% endif %}" data-bs-toggle="tab">
+          <i class="ti ti-clock-play me-2"></i> Application Usage
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#tab-logs" class="nav-link {% if active_tab == 'logs' %}active{% endif %}" data-bs-toggle="tab">
+          <i class="ti ti-notes me-2"></i> Activity Logs
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card-body">
+    <div class="tab-content">
+      <!-- 1. TAB OVERVIEW -->
+      <div class="tab-pane {% if active_tab == 'overview' %}active show{% endif %}" id="tab-overview">
+        <div class="row row-cards">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header"><h3 class="card-title"><i class="ti ti-device-laptop me-2"></i> System Summary</h3></div>
+              <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                  <tbody>
+                    <tr><td class="text-secondary w-50">Hostname</td><td class="fw-bold">{{ e.hostname }}</td></tr>
+                    <tr><td class="text-secondary">Health Indication</td><td>{{ e.health }}</td></tr>
+                    <tr><td class="text-secondary">Operating System</td><td>{{ e.os_name }} {{ e.os_release }}</td></tr>
+                    <tr><td class="text-secondary">OS Build / Version</td><td>{{ e.os_version }}</td></tr>
+                    <tr><td class="text-secondary">Install Date</td><td>{{ e.os_install_display }}</td></tr>
+                    <tr><td class="text-secondary">Manufacturer / Model</td><td>{{ e.manufacturer|default:'Unavailable' }} {{ e.model|default:'' }}</td></tr>
+                    <tr><td class="text-secondary">Serial Number</td><td><code>{{ e.serial_number|default:'Unavailable' }}</code></td></tr>
+                    <tr><td class="text-secondary">Processor (CPU)</td><td>{{ e.cpu }} ({{ e.cpu_cores }} Cores)</td></tr>
+                    <tr><td class="text-secondary">RAM Usage</td><td>{{ e.ram_used_gb }} / {{ e.ram_total_gb }} GB ({{ e.ram_percent }}%)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card mb-3">
+              <div class="card-header"><h3 class="card-title"><i class="ti ti-shield-lock me-2"></i> Status Keamanan</h3></div>
+              <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                  <tbody>
+                    <tr><td class="text-secondary w-50">Antivirus Utama</td><td class="fw-bold text-success">{{ e.security_data.antivirus|default:'Unknown' }}</td></tr>
+                    <tr><td class="text-secondary">Update Signature Terakhir</td><td>{{ e.signature_display }}</td></tr>
+                    <tr><td class="text-secondary">Quick Scan Terakhir</td><td>{{ e.quickscan_display }}</td></tr>
+                    <tr><td class="text-secondary">Windows Firewall</td><td><span class="badge bg-blue-lt">{{ e.security_data.firewall|default:'Unknown' }}</span></td></tr>
+                    <tr><td class="text-secondary">BitLocker Encryption</td><td>{{ e.security_data.encryption|default:'Unavailable' }}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><h3 class="card-title"><i class="ti ti-bell-ringing me-2 text-danger"></i> Open Alerts ({{ e.open_alerts|length }})</h3></div>
+              <div class="card-body p-0">
+                {% if e.open_alerts %}
+                  <div class="list-group list-group-flush">
+                    {% for a in e.open_alerts %}
+                    <div class="list-group-item">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-danger text-danger-fg">{{ a.severity }}</span>
+                        <span class="small text-secondary">{{ a.ts }}</span>
+                      </div>
+                      <div class="fw-bold mt-1">{{ a.title }}</div>
+                      <div class="text-secondary small">{{ a.detail }}</div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="p-3 text-center text-secondary small">
+                    <i class="ti ti-check text-success fs-2 d-block mb-1"></i> Tidak ada peringatan aktif untuk endpoint ini.
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. TAB HARDWARE -->
+      <div class="tab-pane {% if active_tab == 'hardware' %}active show{% endif %}" id="tab-hardware">
+        <div class="row row-cards">
+          <div class="col-md-5">
+            <div class="card">
+              <div class="card-header"><h3 class="card-title"><i class="ti ti-cpu me-2"></i> Processor & Memory</h3></div>
+              <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr><td class="text-secondary">Processor</td><td class="fw-bold">{{ e.cpu }}</td></tr>
+                    <tr><td class="text-secondary">Logical Cores</td><td>{{ e.cpu_cores }} Cores</td></tr>
+                    <tr><td class="text-secondary">Architecture</td><td>{{ e.architecture }}</td></tr>
+                    <tr>
+                      <td class="text-secondary">CPU Load</td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="progress progress-sm flex-fill">
+                            <div class="progress-bar bg-primary" style="width: {{ e.cpu_percent }}%"></div>
+                          </div>
+                          <span>{{ e.cpu_percent }}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="text-secondary">RAM Usage</td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="progress progress-sm flex-fill">
+                            <div class="progress-bar bg-info" style="width: {{ e.ram_percent }}%"></div>
+                          </div>
+                          <span>{{ e.ram_used_gb }} / {{ e.ram_total_gb }} GB</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-7">
+            <div class="card">
+              <div class="card-header"><h3 class="card-title"><i class="ti ti-database me-2"></i> Disk Storage Partitions</h3></div>
+              <div class="table-responsive">
+                <table class="table table-vcenter">
+                  <thead>
+                    <tr><th>Mount</th><th>Filesystem</th><th>Total</th><th>Free</th><th>Usage</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for d in e.disks_list %}
+                    <tr>
+                      <td class="fw-bold">{{ d.mount }}</td>
+                      <td><span class="badge bg-secondary-lt">{{ d.filesystem }}</span></td>
+                      <td>{{ d.total_gb }} GB</td>
+                      <td>{{ d.free_gb }} GB</td>
+                      <td style="min-width: 140px;">
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="progress progress-sm flex-fill">
+                            <div class="progress-bar {% if d.percent_used > 85 %}bg-danger{% elif d.percent_used > 70 %}bg-warning{% else %}bg-primary{% endif %}" style="width: {{ d.percent_used }}%"></div>
+                          </div>
+                          <span class="small">{{ d.percent_used }}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-secondary">Data partisi disk belum tersedia.</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. TAB SOFTWARE -->
+      <div class="tab-pane {% if active_tab == 'software' %}active show{% endif %}" id="tab-software">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title"><i class="ti ti-apps me-2"></i> Installed Applications Inventory ({{ e.software_list|length }})</h3>
+            <input type="search" id="software-search-input" class="form-control form-control-sm w-auto" placeholder="Cari nama aplikasi..." oninput="filterSoftwareTable()">
+          </div>
+          <div class="table-responsive" style="max-height: 480px;">
+            <table class="table table-vcenter table-striped table-hover" id="software-table">
+              <thead>
+                <tr>
+                  <th>Aplikasi</th>
+                  <th>Versi</th>
+                  <th>Publisher</th>
+                  <th>Tanggal Pasang</th>
+                  <th>Lokasi</th>
+                  <th>Status Lisensi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for sw in e.software_list %}
+                <tr>
+                  <td class="fw-bold">{{ sw.name }}</td>
+                  <td><span class="badge bg-azure-lt">{{ sw.version|default:'Unknown' }}</span></td>
+                  <td class="text-secondary small">{{ sw.publisher|default:'Unknown' }}</td>
+                  <td class="text-secondary small">{{ sw.install_date_display }}</td>
+                  <td class="text-secondary small" style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ sw.install_location }}">{{ sw.install_location|default:'—' }}</td>
+                  <td><span class="badge bg-secondary-lt">{{ sw.license_status|default:'Unknown' }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-secondary py-4">Belum ada inventaris software yang dilaporkan.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. TAB NETWORK -->
+      <div class="tab-pane {% if active_tab == 'network' %}active show{% endif %}" id="tab-network">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title"><i class="ti ti-network me-2"></i> Network Interfaces & Throughput</h3></div>
+          <div class="table-responsive">
+            <table class="table table-vcenter">
+              <thead>
+                <tr>
+                  <th>Interface</th>
+                  <th>Status</th>
+                  <th>IP Address</th>
+                  <th>MAC Address</th>
+                  <th>Download (Throughput)</th>
+                  <th>Upload (Throughput)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for n in e.network_list %}
+                <tr>
+                  <td class="fw-bold">{{ n.interface }}</td>
+                  <td>
+                    {% if n.is_up %}
+                      <span class="badge bg-green-lt"><i class="ti ti-check me-1"></i> Up</span>
+                    {% else %}
+                      <span class="badge bg-secondary-lt">Down</span>
+                    {% endif %}
+                  </td>
+                  <td><code>{{ n.ip|default:'No IP' }}</code></td>
+                  <td><code>{{ n.mac|default:'No MAC' }}</code></td>
+                  <td>
+                    {% if n.download_mbps is not None %}
+                      <span class="badge bg-teal-lt fs-6"><i class="ti ti-arrow-down me-1"></i> {{ n.download_mbps }} Mbps</span>
+                    {% else %}
+                      <span class="text-secondary small">Sampling...</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if n.upload_mbps is not None %}
+                      <span class="badge bg-cyan-lt fs-6"><i class="ti ti-arrow-up me-1"></i> {{ n.upload_mbps }} Mbps</span>
+                    {% else %}
+                      <span class="text-secondary small">Sampling...</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-secondary">Data interface jaringan tidak tersedia.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. TAB SECURITY -->
+      <div class="tab-pane {% if active_tab == 'security' %}active show{% endif %}" id="tab-security">
+        <div class="row row-cards">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header"><h3 class="card-title"><i class="ti ti-shield-check me-2 text-success"></i> Windows Defender & Protection</h3></div>
+              <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                  <tbody>
+                    <tr><td class="text-secondary w-50">Produk Antivirus</td><td class="fw-bold">{{ e.security_data.antivirus|default:'Unknown' }}</td></tr>
+                    <tr><td class="text-secondary">Update Signature</td><td>{{ e.signature_display }}</td></tr>
+                    <tr><td class="text-secondary">Quick Scan Terakhir</td><td>{{ e.quickscan_display }}</td></tr>
+                    <tr><td class="text-secondary">Enkripsi BitLocker</td><td>{{ e.security_data.encryption|default:'Unavailable' }}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header"><h3 class="card-title"><i class="ti ti-wall me-2 text-primary"></i> Windows Firewall Profiles</h3></div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <div class="text-secondary small mb-1">Status Profil Firewall:</div>
+                  <div class="p-2 border rounded bg-body-tertiary">
+                    {{ firewall_html | safe }}
+                  </div>
+                </div>
+                <div class="text-secondary small">
+                  <i class="ti ti-info-circle me-1"></i> Indikator teknis dilaporkan langsung oleh agen endpoint melalui Windows CIM/WMI.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. TAB APPLICATION USAGE -->
+      <div class="tab-pane {% if active_tab == 'usage' %}active show{% endif %}" id="tab-usage">
+        <div class="row row-cards mb-3">
+          <div class="col-md-4">
+            <div class="card card-sm">
+              <div class="card-body">
+                <div class="text-secondary small text-uppercase">Running Processes</div>
+                <div class="fw-bold fs-2">{{ e.processes_list|length }}</div>
+                <div class="text-secondary small">Snapshot proses aktif</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card card-sm">
+              <div class="card-body">
+                <div class="text-secondary small text-uppercase">Foreground Active Process</div>
+                <div class="fw-bold fs-3 text-truncate text-primary">{{ e.foreground_app.process|default:'Unavailable' }}</div>
+                <div class="text-secondary small text-truncate">{{ e.foreground_app.window_title|default:'No window' }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card card-sm">
+              <div class="card-body">
+                <div class="text-secondary small text-uppercase">Durasi Sesi Aktif</div>
+                <div class="fw-bold fs-2 text-success">{{ e.foreground_app.active_seconds_display|default:'0s' }}</div>
+                <div class="text-secondary small">Sampled: {{ e.foreground_app.sampled_at|default:'—' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Searchable Process Table with Kill & Block buttons -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title"><i class="ti ti-list-details me-2"></i> Process Inventory ({{ e.processes_list|length }})</h3>
+            <input type="search" id="process-search-input" class="form-control form-control-sm w-auto" placeholder="Cari nama, PID, user..." oninput="filterProcessTable()">
+          </div>
+          <div class="table-responsive" style="max-height: 400px;">
+            <table class="table table-vcenter table-hover table-striped" id="process-table">
+              <thead>
+                <tr>
+                  <th>Executable</th>
+                  <th>PID</th>
+                  <th>Windows User</th>
+                  <th>RAM (MB)</th>
+                  <th>Path</th>
+                  <th class="w-1">Aksi Kontrol</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in e.processes_list %}
+                <tr>
+                  <td class="fw-bold">
+                    <i class="ti ti-file-code text-secondary me-1"></i> {{ p.name }}
+                  </td>
+                  <td><code>{{ p.pid }}</code></td>
+                  <td>{{ p.user }}</td>
+                  <td>{{ p.memory_mb|default:'—' }} MB</td>
+                  <td class="small text-secondary text-truncate" style="max-width: 250px;" title="{{ p.executable }}">{{ p.executable|default:'—' }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <form method="post" action="/action" onsubmit="return confirm('Hentikan paksa proses {{ p.name }} (PID: {{ p.pid }})?')">
+                        {% csrf_token %}
+                        <input type="hidden" name="agent_id" value="{{ e.agent_id }}">
+                        <input type="hidden" name="action" value="stop_application">
+                        <input type="hidden" name="app_name" value="{{ p.name }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Stop Process (taskkill)">
+                          <i class="ti ti-square-x"></i> Stop
+                        </button>
+                      </form>
+                      <form method="post" action="/action" onsubmit="return confirm('Terapkan aturan AppLocker block untuk {{ p.name }}?')">
+                        {% csrf_token %}
+                        <input type="hidden" name="agent_id" value="{{ e.agent_id }}">
+                        <input type="hidden" name="action" value="app_block">
+                        <input type="hidden" name="app_name" value="{{ p.name }}">
+                        <button type="submit" class="btn btn-sm btn-outline-warning ms-1" title="Block Executable via AppLocker">
+                          <i class="ti ti-ban"></i> Block
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-secondary py-4">Data proses belum tersedia.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. TAB ACTIVITY LOGS -->
+      <div class="tab-pane {% if active_tab == 'logs' %}active show{% endif %}" id="tab-logs">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title"><i class="ti ti-notes me-2"></i> Endpoint Activity & Audit Logs</h3></div>
+          <div class="table-responsive">
+            <table class="table table-vcenter">
+              <thead>
+                <tr><th>Waktu (UTC)</th><th>Actor</th><th>Kategori</th><th>Aksi</th><th>Detail</th></tr>
+              </thead>
+              <tbody>
+                {% for l in endpoint_logs %}
+                <tr>
+                  <td class="text-secondary small">{{ l.ts }}</td>
+                  <td><span class="badge bg-secondary-lt">{{ l.actor }}</span></td>
+                  <td>{{ l.category }}</td>
+                  <td class="fw-bold">{{ l.action }}</td>
+                  <td class="small">{{ l.detail }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-secondary py-4">Belum ada catatan log aktivitas untuk endpoint ini.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint Control Action Drawer (Always accessible at bottom) -->
+<div class="card border-primary">
+  <div class="card-header bg-primary-lt">
+    <h3 class="card-title text-primary"><i class="ti ti-terminal me-2"></i> Jalankan Aksi Remote untuk Endpoint Ini</h3>
+  </div>
+  <div class="card-body">
+    <form id="endpoint-action-form" method="post" action="/action" onsubmit="return confirmAction(this)">
+      {% csrf_token %}
+      <input type="hidden" name="agent_id" value="{{ e.agent_id }}">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Pilih Aksi</label>
+          <select name="action" id="action-select" class="form-select" onchange="handleActionChange()">
+            <optgroup label="Sistem & Daya">
+              <option value="restart_endpoint">Restart Endpoint</option>
+              <option value="shutdown_endpoint">Shut Down Endpoint</option>
+            </optgroup>
+            <optgroup label="Inventaris & Scan">
+              <option value="refresh_inventory">Refresh Semua Inventaris</option>
+              <option value="software_inventory">Refresh Software Inventory</option>
+              <option value="hardware_health">Cek Kesehatan Hardware</option>
+              <option value="security_scan">Scan Kepatuhan Keamanan</option>
+              <option value="connectivity_test">Tes Konektivitas (Ping)</option>
+            </optgroup>
+            <optgroup label="Software & Manajemen">
+              <option value="install_app">Install Aplikasi (WinGet Catalog)</option>
+              <option value="uninstall_app">Uninstall Aplikasi Terpasang</option>
+            </optgroup>
+            <optgroup label="Pengawasan & Kontrol">
+              <option value="notify_client">Kirim Notifikasi Pop-up ke Layar</option>
+              <option value="stop_application">Stop Proses Aplikasi</option>
+              <option value="app_block">Blokir Aplikasi (AppLocker)</option>
+              <option value="app_unblock">Buka Blokir Aplikasi (AppLocker)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Dynamic Field: Software Install via WinGet Search -->
+        <div class="col-md-5" id="field-winget" style="display: none;">
+          <label class="form-label">Cari & Pilih Paket WinGet</label>
+          <div class="input-group">
+            <input type="search" id="winget-search-input" class="form-control" placeholder="Ketik nama app (misal: 7zip, vlc, chrome)...">
+            <button type="button" class="btn btn-outline-secondary" onclick="searchWinGetCatalog()"><i class="ti ti-search"></i> Cari</button>
+          </div>
+          <select name="package_id" id="winget-select" class="form-select mt-2" disabled>
+            <option value="">Hasil pencarian akan muncul di sini...</option>
+          </select>
+          <input type="hidden" name="package_name" id="winget-package-name">
+          <small class="text-secondary d-block mt-1" id="winget-message">Pencarian dilakukan secara live ke repositori resmi WinGet.</small>
+        </div>
+
+        <!-- Dynamic Field: Software Uninstall from local inventory -->
+        <div class="col-md-5" id="field-uninstall" style="display: none;">
+          <label class="form-label">Pilih Aplikasi Terpasang untuk Dicopot</label>
+          <select name="package_id" id="uninstall-select" class="form-select" disabled>
+            {% for sw in e.software_list %}
+              {% if sw.name %}
+              <option value="{{ sw.name }}">{{ sw.name }} ({{ sw.version|default:'v?' }})</option>
+              {% endif %}
+            {% empty %}
+              <option value="">Tidak ada software dalam inventaris</option>
+            {% endfor %}
+          </select>
+          <small class="text-secondary d-block mt-1">Agent akan menjalankan silent uninstaller dari registry.</small>
+        </div>
+
+        <!-- Dynamic Field: App Stop / Block / Unblock -->
+        <div class="col-md-5" id="field-app-control" style="display: none;">
+          <label class="form-label">Nama Executable (.exe)</label>
+          <input type="text" name="app_name" class="form-control" placeholder="Contoh: notepad.exe, msedge.exe">
+          <small class="text-secondary d-block mt-1">Masukkan nama file executable proses target.</small>
+        </div>
+
+        <!-- Dynamic Field: Message to Client -->
+        <div class="col-md-5" id="field-notify" style="display: none;">
+          <label class="form-label">Pesan untuk Karyawan</label>
+          <input type="text" name="message" class="form-control" placeholder="Pesan penting dari tim IT Operation...">
+        </div>
+
+        <div class="col-md-auto ms-auto">
+          <button type="submit" class="btn btn-primary d-flex align-items-center gap-1">
+            <i class="ti ti-send"></i> Eksekusi Aksi
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function filterSoftwareTable() {
+    const q = document.getElementById('software-search-input').value.toLowerCase();
+    document.querySelectorAll('#software-table tbody tr').forEach(r => {
+      r.hidden = !r.innerText.toLowerCase().includes(q);
+    });
+  }
+
+  function filterProcessTable() {
+    const q = document.getElementById('process-search-input').value.toLowerCase();
+    document.querySelectorAll('#process-table tbody tr').forEach(r => {
+      r.hidden = !r.innerText.toLowerCase().includes(q);
+    });
+  }
+
+  function handleActionChange() {
+    const act = document.getElementById('action-select').value;
+    const fw = document.getElementById('field-winget');
+    const fu = document.getElementById('field-uninstall');
+    const fa = document.getElementById('field-app-control');
+    const fn = document.getElementById('field-notify');
+
+    fw.style.display = 'none';
+    fu.style.display = 'none';
+    fa.style.display = 'none';
+    fn.style.display = 'none';
+
+    document.getElementById('winget-select').disabled = true;
+    document.getElementById('uninstall-select').disabled = true;
+
+    if (act === 'install_app') {
+      fw.style.display = 'block';
+      document.getElementById('winget-select').disabled = false;
+    } else if (act === 'uninstall_app') {
+      fu.style.display = 'block';
+      document.getElementById('uninstall-select').disabled = false;
+    } else if (['stop_application', 'app_block', 'app_unblock'].includes(act)) {
+      fa.style.display = 'block';
+    } else if (act === 'notify_client') {
+      fn.style.display = 'block';
+    }
+  }
+
+  async function searchWinGetCatalog() {
+    const q = document.getElementById('winget-search-input').value.trim();
+    const sel = document.getElementById('winget-select');
+    const msg = document.getElementById('winget-message');
+    if (q.length < 2) {
+      alert('Masukkan minimal 2 karakter untuk mencari di katalog.');
+      return;
+    }
+    msg.textContent = 'Mencari di katalog WinGet server...';
+    sel.innerHTML = '<option value="">Sedang mencari...</option>';
+    try {
+      const res = await fetch('/api/catalog/search?q=' + encodeURIComponent(q));
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        sel.innerHTML = data.items.map(x => `<option value="${x.id}" data-name="${x.name}">${x.name} (${x.id}) &mdash; ${x.version || 'v?'}</option>`).join('');
+        msg.textContent = `Ditemukan ${data.items.length} paket aplikasi. Pilih salah satu untuk diinstall.`;
+        updateWinGetPackageName();
+      } else {
+        sel.innerHTML = '<option value="">Tidak ada paket ditemukan</option>';
+        msg.textContent = data.message || 'Tidak ada paket yang cocok di WinGet.';
+      }
+    } catch(err) {
+      sel.innerHTML = '<option value="">Pencarian gagal</option>';
+      msg.textContent = 'Error menghubungi server katalog WinGet.';
+    }
+  }
+
+  function updateWinGetPackageName() {
+    const sel = document.getElementById('winget-select');
+    const hidden = document.getElementById('winget-package-name');
+    if (sel.selectedOptions[0]) {
+      hidden.value = sel.selectedOptions[0].getAttribute('data-name') || '';
+    }
+  }
+  document.getElementById('winget-select').addEventListener('change', updateWinGetPackageName);
+
+  document.addEventListener("DOMContentLoaded", handleActionChange);
+</script>
+{% endblock %}

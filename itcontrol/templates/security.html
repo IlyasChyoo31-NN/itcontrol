@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Security & Compliance{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">Kepatuhan & Perlindungan</div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <i class="ti ti-shield-check text-primary"></i> Security & Compliance
+      </h2>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Audit Status Keamanan Endpoint Kantor</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter table-hover table-striped">
+      <thead>
+        <tr>
+          <th>Endpoint</th>
+          <th>Status Kesehatan</th>
+          <th>Antivirus Produk</th>
+          <th>Update Signature</th>
+          <th>Quick Scan Terakhir</th>
+          <th>Windows Firewall</th>
+          <th class="w-1">Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in eps %}
+        <tr>
+          <td>
+            <div class="fw-bold">{{ e.hostname }}</div>
+            <div class="text-secondary small">{{ e.os_name }} {{ e.os_release }}</div>
+          </td>
+          <td>
+            <span class="badge {% if e.health == 'Critical' %}bg-danger-lt{% elif e.health == 'Warning' %}bg-warning-lt{% elif e.health == 'Offline' %}bg-secondary-lt{% else %}bg-success-lt{% endif %}">
+              {{ e.health }}
+            </span>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-1 text-success fw-bold">
+              <i class="ti ti-shield-check"></i> {{ e.security_data.antivirus|default:'Unknown' }}
+            </div>
+          </td>
+          <td class="text-secondary small">{{ e.signature_display }}</td>
+          <td class="text-secondary small">{{ e.quickscan_display }}</td>
+          <td>
+            <span class="badge bg-blue-lt">{{ e.security_data.firewall|default:'Unknown' }}</span>
+          </td>
+          <td>
+            <a href="/endpoint/{{ e.agent_id }}/?tab=security" class="btn btn-sm btn-outline-primary">
+              <i class="ti ti-eye"></i> Detail
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center py-4 text-secondary">Belum ada data kepatuhan keamanan.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Operations Overview{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">Monitoring & Kontrol</div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <i class="ti ti-dashboard text-primary"></i> Operations Overview
+      </h2>
+    </div>
+    <div class="col-auto ms-auto d-print-none">
+      <div class="btn-list">
+        <a href="/page/endpoints" class="btn btn-primary d-none d-sm-inline-block">
+          <i class="ti ti-devices"></i> Kelola Seluruh Endpoint
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 8 KPI Metric Cards -->
+<div class="row row-cards mb-4">
+  <div class="col-6 col-sm-4 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-primary-lt text-primary avatar">
+              <i class="ti ti-devices fs-2"></i>
+            </span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium">Total Endpoints</div>
+            <div class="text-secondary fw-bold fs-2">{{ eps|length }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-sm-4 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-green-lt text-green avatar">
+              <i class="ti ti-circle-check fs-2"></i>
+            </span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium">Online</div>
+            <div class="text-green fw-bold fs-2">{{ online_count }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-sm-4 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-yellow-lt text-yellow avatar">
+              <i class="ti ti-alert-triangle fs-2"></i>
+            </span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium">Warnings</div>
+            <div class="text-yellow fw-bold fs-2">{{ warning_count }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-sm-4 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-danger-lt text-danger avatar">
+              <i class="ti ti-alert-octagon fs-2"></i>
+            </span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium">Critical Alerts</div>
+            <div class="text-danger fw-bold fs-2">{{ critical_count }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-sm-4 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-secondary-lt text-secondary avatar">
+              <i class="ti ti-circle-x fs-2"></i>
+            </span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium">Offline</div>
+            <div class="text-secondary fw-bold fs-2">{{ offline_count }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-sm-4 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-red-lt text-red avatar">
+              <i class="ti ti-bell-ringing fs-2"></i>
+            </span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium">Open Alerts</div>
+            <div class="text-red fw-bold fs-2">{{ open_alerts|length }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-sm-4 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-cyan-lt text-cyan avatar">
+              <i class="ti ti-loader-2 fs-2"></i>
+            </span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium">Pending Jobs</div>
+            <div class="text-cyan fw-bold fs-2">{{ pending_jobs_count }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-sm-4 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-indigo-lt text-indigo avatar">
+              <i class="ti ti-history fs-2"></i>
+            </span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium">Total Actions</div>
+            <div class="text-indigo fw-bold fs-2">{{ jobs|length }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row row-cards">
+  <!-- Endpoints Requiring Attention -->
+  <div class="col-12 col-xl-7">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title d-flex align-items-center gap-2">
+          <i class="ti ti-alert-circle text-warning"></i> Endpoints Requiring Attention
+        </h3>
+        <a href="/page/endpoints" class="btn btn-outline-secondary btn-sm">Lihat Semua Endpoint</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table card-table table-vcenter table-hover text-nowrap">
+          <thead>
+            <tr>
+              <th>Endpoint / Host</th>
+              <th>CPU Usage</th>
+              <th>RAM Usage</th>
+              <th>Kesehatan</th>
+              <th>Peringatan</th>
+              <th class="w-1"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if attention_list %}
+              {% for e in attention_list %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <span class="status-dot-pulse status-{{ e.status | lower }}"></span>
+                    <div>
+                      <div class="fw-bold">{{ e.hostname }}</div>
+                      <div class="text-secondary small">{{ e.manufacturer|default:'' }} {{ e.model|default:'' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="min-width: 110px;">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="progress progress-sm flex-fill">
+                      <div class="progress-bar {% if e.cpu_percent > 85 %}bg-danger{% elif e.cpu_percent > 70 %}bg-warning{% else %}bg-primary{% endif %}" style="width: {{ e.cpu_percent }}%"></div>
+                    </div>
+                    <span class="small text-secondary">{{ e.cpu_percent|default:0 }}%</span>
+                  </div>
+                </td>
+                <td style="min-width: 110px;">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="progress progress-sm flex-fill">
+                      <div class="progress-bar {% if e.ram_percent > 85 %}bg-danger{% elif e.ram_percent > 70 %}bg-warning{% else %}bg-primary{% endif %}" style="width: {{ e.ram_percent }}%"></div>
+                    </div>
+                    <span class="small text-secondary">{{ e.ram_percent|default:0 }}%</span>
+                  </div>
+                </td>
+                <td>
+                  {% if e.health == 'Critical' %}
+                    <span class="badge bg-red-lt"><i class="ti ti-alert-octagon me-1"></i> Critical</span>
+                  {% elif e.health == 'Warning' %}
+                    <span class="badge bg-yellow-lt"><i class="ti ti-alert-triangle me-1"></i> Warning</span>
+                  {% elif e.health == 'Offline' %}
+                    <span class="badge bg-secondary-lt"><i class="ti ti-power me-1"></i> Offline</span>
+                  {% else %}
+                    <span class="badge bg-green-lt"><i class="ti ti-check me-1"></i> Healthy</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if e.open_alerts %}
+                    <span class="badge bg-red text-red-fg">{{ e.open_alerts|length }} alert</span>
+                  {% else %}
+                    <span class="text-secondary small">None</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="/endpoint/{{ e.agent_id }}" class="btn btn-sm btn-outline-primary">
+                    Detail
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="6" class="text-center py-4 text-secondary">
+                  <i class="ti ti-circle-check text-success fs-1 d-block mb-2"></i>
+                  Semua endpoint dalam kondisi sehat dan normal.
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Alerts Card -->
+  <div class="col-12 col-xl-5">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title d-flex align-items-center gap-2">
+          <i class="ti ti-bell-ringing text-danger"></i> Recent Alerts
+        </h3>
+        <a href="/page/alerts" class="btn btn-outline-secondary btn-sm">Buka Alert Center</a>
+      </div>
+      <div class="list-group list-group-flush list-group-hoverable">
+        {% if open_alerts %}
+          {% for a in open_alerts|slice:":6" %}
+          <div class="list-group-item">
+            <div class="row align-items-center">
+              <div class="col-auto">
+                {% if a.severity == 'Critical' or a.severity == 'High' %}
+                  <span class="badge bg-danger text-danger-fg">{{ a.severity }}</span>
+                {% elif a.severity == 'Medium' %}
+                  <span class="badge bg-warning text-warning-fg">{{ a.severity }}</span>
+                {% else %}
+                  <span class="badge bg-info text-info-fg">{{ a.severity }}</span>
+                {% endif %}
+              </div>
+              <div class="col text-truncate">
+                <a href="{{ a.open_href }}" class="text-reset d-block fw-bold text-truncate">{{ a.title }}</a>
+                <div class="d-block text-secondary text-truncate small mt-n1">{{ a.detail }}</div>
+                <div class="text-muted small mt-1">
+                  <i class="ti ti-device-laptop me-1"></i> {{ a.agent_id }} &middot; {{ a.ts }}
+                </div>
+              </div>
+              <div class="col-auto">
+                <a href="{{ a.open_href }}" class="btn btn-sm btn-ghost-primary">
+                  Buka
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-5 text-secondary">
+            <i class="ti ti-bell-off fs-1 d-block mb-2"></i>
+            Tidak ada peringatan aktif saat ini.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

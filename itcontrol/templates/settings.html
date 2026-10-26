@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Settings & Administration{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">Konfigurasi Global</div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <i class="ti ti-settings-2 text-primary"></i> Settings & Global Thresholds
+      </h2>
+    </div>
+  </div>
+</div>
+
+<form method="post" action="/settings/save">
+  {% csrf_token %}
+  <div class="row row-cards mb-4">
+    <!-- Interval Monitoring Card -->
+    <div class="col-12 col-md-6">
+      <div class="card h-100">
+        <div class="card-header">
+          <h3 class="card-title"><i class="ti ti-clock-check me-2"></i> Interval Monitoring Telemetri</h3>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label required">Interval Heartbeat Agent (Detik)</label>
+            <input type="number" name="monitoring_interval_seconds" class="form-control" min="15" max="3600" step="1" value="{{ cfg.monitoring_interval_seconds }}" required>
+            <small class="form-hint">Nilai ini dikirim ke agent pada respons heartbeat dan diterapkan di siklus berikutnya (minimal 15 detik).</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bandwidth Setting Card -->
+    <div class="col-12 col-md-6">
+      <div class="card h-100">
+        <div class="card-header">
+          <h3 class="card-title"><i class="ti ti-network me-2"></i> Kapasitas Tautan Bandwidth</h3>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label required">Kapasitas Link Jaringan (Mbps)</label>
+            <input type="number" name="bandwidth_capacity_mbps" class="form-control" min="0" max="10000000" step="0.1" value="{{ cfg.bandwidth_capacity_mbps }}" required>
+            <small class="form-hint">Isi 0 untuk menonaktifkan alert utilisasi bandwidth. Isi nilai total kapasitas LAN (misal: 100 atau 1000 Mbps).</small>
+          </div>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label required">Bandwidth Warning (%)</label>
+              <input type="number" name="bandwidth_warn" class="form-control" min="1" max="99" value="{{ cfg.bandwidth_warn }}" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label required">Bandwidth Critical (%)</label>
+              <input type="number" name="bandwidth_critical" class="form-control" min="2" max="100" value="{{ cfg.bandwidth_critical }}" required>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Threshold Alert System Card -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="ti ti-bell-ringing me-2"></i> Ambang Batas Peringatan Otomatis (Thresholds)</h3>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="p-3 border rounded">
+                <div class="fw-bold mb-2 text-primary"><i class="ti ti-cpu me-1"></i> CPU Utilization</div>
+                <div class="mb-2">
+                  <label class="form-label small">Warning Threshold (%)</label>
+                  <input type="number" name="cpu_warn" class="form-control form-control-sm" min="1" max="99" value="{{ cfg.cpu_warn }}" required>
+                </div>
+                <div>
+                  <label class="form-label small">Critical Threshold (%)</label>
+                  <input type="number" name="cpu_critical" class="form-control form-control-sm" min="2" max="100" value="{{ cfg.cpu_critical }}" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="p-3 border rounded">
+                <div class="fw-bold mb-2 text-info"><i class="ti ti-layers-intersect me-1"></i> RAM Utilization</div>
+                <div class="mb-2">
+                  <label class="form-label small">Warning Threshold (%)</label>
+                  <input type="number" name="ram_warn" class="form-control form-control-sm" min="1" max="99" value="{{ cfg.ram_warn }}" required>
+                </div>
+                <div>
+                  <label class="form-label small">Critical Threshold (%)</label>
+                  <input type="number" name="ram_critical" class="form-control form-control-sm" min="2" max="100" value="{{ cfg.ram_critical }}" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="p-3 border rounded">
+                <div class="fw-bold mb-2 text-danger"><i class="ti ti-database me-1"></i> Disk Storage Capacity</div>
+                <div class="mb-2">
+                  <label class="form-label small">Warning Threshold (%)</label>
+                  <input type="number" name="disk_warn" class="form-control form-control-sm" min="1" max="99" value="{{ cfg.disk_warn }}" required>
+                </div>
+                <div>
+                  <label class="form-label small">Critical Threshold (%)</label>
+                  <input type="number" name="disk_critical" class="form-control form-control-sm" min="2" max="100" value="{{ cfg.disk_critical }}" required>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+          <small class="text-secondary">Nilai Critical harus lebih tinggi daripada nilai Warning.</small>
+          <div class="btn-list">
+            <a href="/page/settings" class="btn btn-secondary">Batalkan</a>
+            <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1">
+              <i class="ti ti-device-floppy"></i> Simpan Pengaturan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

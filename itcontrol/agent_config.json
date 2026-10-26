@@ -1,0 +1,5 @@
+{
+  "server_url": "http://127.0.0.1:5000/api/heartbeat",
+  "api_key": "change-this-local-dev-key",
+  "interval_seconds": 30
+}

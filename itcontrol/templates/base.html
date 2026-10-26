@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta http-equiv="refresh" content="45" />
+  <title>{% block title %}IT Operation Control Tower{% endblock %} · Enterprise RMM Console</title>
+
+  <!-- Tabler Core CSS & Tabler Icons (Local Static Assets) -->
+  <link rel="stylesheet" href="/static/tabler/css/tabler.min.css">
+  <link rel="stylesheet" href="/static/tabler/css/tabler-icons.min.css">
+
+  <style>
+    @import url('https://rsms.me/inter/inter.css');
+
+    :root {
+      --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+    }
+
+    body {
+      font-feature-settings: "cv03", "cv04", "cv11";
+    }
+
+    .badge-outline {
+      border: 1px solid currentColor;
+      background: transparent;
+    }
+
+    .table td,
+    .table th {
+      vertical-align: middle;
+    }
+
+    .status-dot-pulse {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .status-online {
+      background-color: #2fb344;
+      box-shadow: 0 0 0 rgba(47, 179, 68, 0.4);
+      animation: pulse-green 2s infinite;
+    }
+
+    .status-stale {
+      background-color: #f76707;
+    }
+
+    .status-offline {
+      background-color: #d63939;
+    }
+
+    @keyframes pulse-green {
+      0% {
+        box-shadow: 0 0 0 0 rgba(47, 179, 68, 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 0 6px rgba(47, 179, 68, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(47, 179, 68, 0);
+      }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="layout-fluid">
+  <script>
+    // Tabler theme persistence
+    let currentTheme = localStorage.getItem('tablerTheme') || 'light';
+    document.body.setAttribute("data-bs-theme", currentTheme);
+  </script>
+
+  <div class="page">
+    <!-- Sidebar Navigation -->
+    <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu"
+          aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <h1 class="navbar-brand navbar-brand-autodark">
+          <a href="/page/dashboard" class="d-flex align-items-center gap-2 text-decoration-none text-reset">
+            <i class="ti ti-server-cog text-cyan fs-1"></i>
+            <div class="text-start">
+              <div class="fw-bold tracking-tight" style="font-size: 15px; line-height: 1.2;">IT CONTROL TOWER</div>
+              <div class="text-secondary small fw-normal" style="font-size: 10px;">ENTERPRISE RMM V15</div>
+            </div>
+          </a>
+        </h1>
+
+        <div class="collapse navbar-collapse" id="sidebar-menu">
+          <ul class="navbar-nav pt-lg-3">
+            <!-- WORKSPACE GROUP -->
+            <li class="nav-item-header text-uppercase text-secondary fs-6 fw-bold px-3 pt-2 pb-1"
+              style="font-size: 10px !important; letter-spacing: 0.8px;">
+              Workspace
+            </li>
+            <li class="nav-item {% if page == 'dashboard' %}active{% endif %}">
+              <a class="nav-link" href="/page/dashboard">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-dashboard"></i></span>
+                <span class="nav-link-title">Operations Overview</span>
+              </a>
+            </li>
+            <li class="nav-item {% if page == 'endpoints' %}active{% endif %}">
+              <a class="nav-link" href="/page/endpoints">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-devices"></i></span>
+                <span class="nav-link-title">Endpoint Management</span>
+              </a>
+            </li>
+            <li class="nav-item {% if page == 'hardware' %}active{% endif %}">
+              <a class="nav-link" href="/page/hardware">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-cpu"></i></span>
+                <span class="nav-link-title">Hardware Inventory</span>
+              </a>
+            </li>
+            <li class="nav-item {% if page == 'software' %}active{% endif %}">
+              <a class="nav-link" href="/page/software">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-apps"></i></span>
+                <span class="nav-link-title">Software Management</span>
+              </a>
+            </li>
+            <li class="nav-item {% if page == 'network' %}active{% endif %}">
+              <a class="nav-link" href="/page/network">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-network"></i></span>
+                <span class="nav-link-title">Network Monitoring</span>
+              </a>
+            </li>
+            <li class="nav-item {% if page == 'security' %}active{% endif %}">
+              <a class="nav-link" href="/page/security">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-shield-check"></i></span>
+                <span class="nav-link-title">Security & Compliance</span>
+              </a>
+            </li>
+            <li class="nav-item {% if page == 'usage' %}active{% endif %}">
+              <a class="nav-link" href="/page/usage">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clock-play"></i></span>
+                <span class="nav-link-title">Application Usage</span>
+              </a>
+            </li>
+
+            <!-- RESPONSE GROUP -->
+            <li class="nav-item-header text-uppercase text-secondary fs-6 fw-bold px-3 pt-3 pb-1"
+              style="font-size: 10px !important; letter-spacing: 0.8px;">
+              Response
+            </li>
+            <li class="nav-item {% if page == 'remote' %}active{% endif %}">
+              <a class="nav-link" href="/page/remote">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i
+                    class="ti ti-device-desktop-analytics"></i></span>
+                <span class="nav-link-title">Remote Desktop</span>
+              </a>
+            </li>
+            <li class="nav-item {% if page == 'alerts' %}active{% endif %}">
+              <a class="nav-link d-flex justify-content-between align-items-center" href="/page/alerts">
+                <div class="d-flex align-items-center">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-bell-ringing"></i></span>
+                  <span class="nav-link-title">Alerts & Notifications</span>
+                </div>
+                {% if open_alerts_count and open_alerts_count > 0 %}
+                <span class="badge bg-red text-red-fg rounded-pill px-2">{{ open_alerts_count }}</span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item {% if page == 'actions' %}active{% endif %}">
+              <a class="nav-link" href="/page/actions">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-terminal-2"></i></span>
+                <span class="nav-link-title">Remote Actions</span>
+              </a>
+            </li>
+
+            <!-- ADMINISTRATION GROUP -->
+            <li class="nav-item-header text-uppercase text-secondary fs-6 fw-bold px-3 pt-3 pb-1"
+              style="font-size: 10px !important; letter-spacing: 0.8px;">
+              Administration
+            </li>
+            <li class="nav-item {% if page == 'reports' %}active{% endif %}">
+              <a class="nav-link" href="/page/reports">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-analytics"></i></span>
+                <span class="nav-link-title">Reports & Audit Logs</span>
+              </a>
+            </li>
+            <li class="nav-item {% if page == 'settings' %}active{% endif %}">
+              <a class="nav-link" href="/page/settings">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-settings-2"></i></span>
+                <span class="nav-link-title">Settings & Thresholds</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Top Header & Main Content Area -->
+    <div class="page-wrapper">
+      <header class="navbar navbar-expand-md d-none d-lg-flex d-print-none border-bottom">
+        <div class="container-xl">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu"
+            aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="navbar-nav flex-row order-md-last align-items-center gap-3">
+            <!-- Theme Toggle Button -->
+            <a href="javascript:void(0)" class="nav-link px-0 text-muted" onclick="toggleTheme()"
+              title="Toggle Dark/Light Mode">
+              <i id="theme-icon" class="ti ti-moon fs-2"></i>
+            </a>
+
+            <!-- Auto-refresh Indicator -->
+            <div class="d-none d-xl-flex align-items-center gap-1 text-muted small">
+              <i class="ti ti-rotate text-azure"></i> Auto-refresh: 45s
+            </div>
+
+            <!-- Quick Action Refresh All -->
+            <form method="post" action="/monitoring/refresh-all"
+              onsubmit="return confirm('Queue refresh telemetri untuk seluruh endpoint yang terdaftar?')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                <i class="ti ti-refresh"></i> Refresh All Data
+              </button>
+            </form>
+          </div>
+
+          <div class="collapse navbar-collapse" id="navbar-menu">
+            <div class="d-flex align-items-center text-muted">
+              <span class="badge bg-blue-lt me-2">BUILD R15-TABLER</span>
+              <span class="small">Local Area Network Endpoint Supervisor</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Body Container -->
+      <main class="page-body">
+        <div class="container-xl">
+          <!-- Notification Flash Banners -->
+          {% if request.GET.saved %}
+          <div class="alert alert-success alert-dismissible" role="alert">
+            <div class="d-flex">
+              <div><i class="ti ti-check fs-2 me-2"></i></div>
+              <div>Pengaturan ambang batas berhasil disimpan ke database.</div>
+            </div>
+            <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+          </div>
+          {% endif %}
+
+          {% if request.GET.refresh_queued %}
+          <div class="alert alert-info alert-dismissible" role="alert">
+            <div class="d-flex">
+              <div><i class="ti ti-info-circle fs-2 me-2"></i></div>
+              <div>Permintaan refresh telemetri telah dimasukkan ke antrean pekerjaan seluruh endpoint.</div>
+            </div>
+            <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+          </div>
+          {% endif %}
+
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+
+      <footer class="footer footer-transparent d-print-none py-3 border-top mt-auto">
+        <div class="container-xl">
+          <div class="row text-center align-items-center flex-row-reverse">
+            <div class="col-lg-auto ms-lg-auto">
+              <ul class="list-inline list-inline-dots mb-0 text-muted small">
+                <li class="list-inline-item">Django + Tabler.io Enterprise Edition</li>
+                <li class="list-inline-item"><a href="/page/settings" class="link-secondary">Konfigurasi</a></li>
+              </ul>
+            </div>
+            <div class="col-12 col-lg-auto mt-3 mt-lg-0 text-muted small">
+              IT Operation Control Tower &copy; 2026. Digunakan khusus pada perangkat kantor resmi terdaftar.
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Tabler Core JS (Local Static Asset) -->
+  <script src="/static/tabler/js/tabler.min.js" defer></script>
+  <script>
+    function updateThemeIcon() {
+      const theme = document.body.getAttribute("data-bs-theme");
+      const icon = document.getElementById("theme-icon");
+      if (icon) {
+        icon.className = theme === 'dark' ? 'ti ti-sun fs-2 text-warning' : 'ti ti-moon fs-2 text-muted';
+      }
+    }
+    function toggleTheme() {
+      const current = document.body.getAttribute("data-bs-theme") || 'light';
+      const target = current === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute("data-bs-theme", target);
+      localStorage.setItem('tablerTheme', target);
+      updateThemeIcon();
+    }
+    document.addEventListener("DOMContentLoaded", updateThemeIcon);
+
+    function confirmAction(f) {
+      const a = f.elements.action?.value || '';
+      if (['restart_endpoint', 'shutdown_endpoint'].includes(a)) {
+        return confirm('Tindakan ini akan me-restart atau mematikan endpoint target. Lanjutkan?');
+      }
+      if (a === 'install_app') return confirm('Konfirmasi pemasangan aplikasi terpilih ke endpoint ini?');
+      if (a === 'uninstall_app') return confirm('Yakin ingin mencopot (uninstall) aplikasi ini dari endpoint?');
+      if (a === 'stop_application') return confirm('Ini hanya menghentikan proses aplikasi yang sedang berjalan. Lanjutkan?');
+      if (['app_block', 'app_unblock'].includes(a)) {
+        return confirm('Tindakan ini mengubah kebijakan lokal AppLocker pada endpoint. Lanjutkan hanya untuk aplikasi uji coba yang diizinkan!');
+      }
+      return true;
+    }
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

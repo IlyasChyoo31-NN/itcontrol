@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Remote Desktop Portal{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">Akses Jarak Jauh</div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <i class="ti ti-device-desktop-analytics text-primary"></i> Remote Desktop (MeshCentral Integration)
+      </h2>
+    </div>
+    <div class="col-auto ms-auto d-print-none">
+      {% if valid_remote %}
+      <a href="{{ remote_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary d-inline-flex align-items-center gap-1">
+        <i class="ti ti-external-link"></i> Buka Portal MeshCentral
+      </a>
+      {% else %}
+      <span class="badge bg-warning-lt fs-6"><i class="ti ti-alert-triangle me-1"></i> Portal Belum Dikonfigurasi</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row row-cards mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Status Integrasi Remote Desktop</h3></div>
+      <div class="card-body">
+        {% if valid_remote %}
+        <div class="alert alert-success d-flex align-items-center">
+          <i class="ti ti-check fs-2 me-3"></i>
+          <div>
+            <strong>URL Portal Terhubung:</strong> Mengarah ke <code>{{ remote_url }}</code>. Klik tombol di atas untuk membuka dashboard MeshCentral dan mengendalikan sesi remote komputer target.
+          </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning d-flex align-items-center">
+          <i class="ti ti-alert-triangle fs-2 me-3"></i>
+          <div>
+            <strong>Portal Belum Dikonfigurasi:</strong> Tetapkan environment variable <code>MESH_CENTRAL_URL=https://server-meshcentral-anda</code> sebelum menjalankan dashboard agar integrasi remote aktif.
+          </div>
+        </div>
+        {% endif %}
+        <p class="text-secondary small mb-0">
+          Catatan: Integrasi ini bertindak sebagai portal launcher resmi terpusat ke software remote management tersertifikasi (seperti MeshCentral / RustDesk). Remote desktop penuh tidak dieksekusi langsung di development port tanpa enkripsi TLS.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Endpoint Terdaftar untuk Akses Remote</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter table-hover table-striped">
+      <thead>
+        <tr>
+          <th>Endpoint / Host</th>
+          <th>Sistem Operasi</th>
+          <th>Status Agent</th>
+          <th>Terakhir Aktif</th>
+          <th class="w-1 text-center">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in eps %}
+        <tr>
+          <td>
+            <div class="fw-bold">{{ e.hostname }}</div>
+            <div class="text-secondary small"><code>{{ e.agent_id }}</code></div>
+          </td>
+          <td>{{ e.os_name }} {{ e.os_release }}</td>
+          <td>
+            <span class="badge {% if e.status == 'Online' %}bg-green-lt{% elif e.status == 'Stale' %}bg-yellow-lt{% else %}bg-secondary-lt{% endif %}">
+              {{ e.status }}
+            </span>
+          </td>
+          <td class="text-secondary small">{{ e.last_seen }}</td>
+          <td class="text-center">
+            <div class="btn-group">
+              <a href="/endpoint/{{ e.agent_id }}/?tab=overview" class="btn btn-sm btn-outline-secondary">
+                <i class="ti ti-info-circle me-1"></i> Detail
+              </a>
+              {% if valid_remote %}
+              <a href="{{ remote_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                <i class="ti ti-external-link me-1"></i> Buka Sesi Portal
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center py-4 text-secondary">Belum ada endpoint terdaftar.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Alerts & Notifications{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">Pusat Peringatan & Insiden</div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <i class="ti ti-bell-ringing text-danger"></i> Alerts & Notifications
+      </h2>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">Riwayat Alert Sistem RMM</h3>
+    <div class="text-secondary small">Klik <b>Buka Sumber</b> untuk menuju langsung ke metrik/tab penyebab alert.</div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter table-hover table-striped">
+      <thead>
+        <tr>
+          <th>Tingkat Keparahan</th>
+          <th>Judul Peringatan & Detail</th>
+          <th>Endpoint Target</th>
+          <th>Waktu Kejadian (UTC)</th>
+          <th>Status</th>
+          <th class="w-1 text-center">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in alerts %}
+        <tr>
+          <td>
+            {% if a.severity == 'Critical' or a.severity == 'High' %}
+              <span class="badge bg-danger text-danger-fg fs-6"><i class="ti ti-alert-octagon me-1"></i> {{ a.severity }}</span>
+            {% elif a.severity == 'Medium' %}
+              <span class="badge bg-warning text-warning-fg fs-6"><i class="ti ti-alert-triangle me-1"></i> {{ a.severity }}</span>
+            {% else %}
+              <span class="badge bg-info text-info-fg fs-6"><i class="ti ti-info-circle me-1"></i> {{ a.severity }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="fw-bold">{{ a.title }}</div>
+            <div class="text-secondary small" style="white-space: pre-wrap;">{{ a.detail }}</div>
+          </td>
+          <td>
+            <code>{{ a.agent_id }}</code>
+          </td>
+          <td class="text-secondary small">{{ a.ts }}</td>
+          <td>
+            {% if a.status == 'Open' %}
+              <span class="badge bg-red-lt"><i class="ti ti-bell me-1"></i> Open</span>
+            {% elif a.status == 'Acknowledged' %}
+              <span class="badge bg-yellow-lt"><i class="ti ti-eye me-1"></i> Acknowledged</span>
+            {% else %}
+              <span class="badge bg-green-lt"><i class="ti ti-check me-1"></i> Resolved</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-1 justify-content-center">
+              <a href="{{ a.open_href }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                <i class="ti ti-external-link"></i> Buka Sumber
+              </a>
+              {% if a.status == 'Open' %}
+              <form method="post" action="/alert/{{ a.id }}/ack" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Tandai sudah diperiksa">
+                  <i class="ti ti-check"></i> Ack
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-5 text-secondary">Tidak ada catatan alert di sistem.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

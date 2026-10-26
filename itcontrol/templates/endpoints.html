@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Endpoint Management{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">Inventaris & Kontrol</div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <i class="ti ti-devices text-primary"></i> Endpoint Management
+      </h2>
+    </div>
+    <div class="col-auto ms-auto d-print-none">
+      <div class="input-icon">
+        <input type="search" id="endpoint-search" class="form-control" placeholder="Cari hostname, model, serial..." oninput="filterEndpoints()">
+        <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">Terdaftar: {{ eps|length }} Komputer / Laptop</h3>
+    <span class="text-secondary small">Klik <b>View Details</b> untuk masuk ke kontrol software, hardware, dan aksi remote.</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter table-hover table-striped" id="endpoints-table">
+      <thead>
+        <tr>
+          <th>Endpoint / Hostname</th>
+          <th>Serial Number</th>
+          <th>CPU Usage</th>
+          <th>RAM Usage</th>
+          <th>Status / Terakhir Aktif</th>
+          <th>Peringatan</th>
+          <th class="w-1 text-center">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in eps %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center">
+              <span class="status-dot-pulse status-{{ e.status | lower }}"></span>
+              <div>
+                <a href="/endpoint/{{ e.agent_id }}/" class="fw-bold text-reset d-block">{{ e.hostname }}</a>
+                <div class="text-secondary small">{{ e.manufacturer|default:'Maker' }} {{ e.model|default:'' }} &middot; <code>{{ e.agent_id }}</code></div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-secondary-lt font-monospace">{{ e.serial_number|default:'Unavailable' }}</span>
+          </td>
+          <td style="min-width: 140px;">
+            <div class="d-flex align-items-center gap-2">
+              <div class="progress progress-sm flex-fill">
+                <div class="progress-bar {% if e.cpu_percent > 85 %}bg-danger{% elif e.cpu_percent > 70 %}bg-warning{% else %}bg-primary{% endif %}" style="width: {{ e.cpu_percent }}%"></div>
+              </div>
+              <span class="small">{{ e.cpu_percent|default:0 }}%</span>
+            </div>
+            <div class="text-secondary small mt-1 text-truncate" style="max-width: 150px;">{{ e.cpu }}</div>
+          </td>
+          <td style="min-width: 140px;">
+            <div class="d-flex align-items-center gap-2">
+              <div class="progress progress-sm flex-fill">
+                <div class="progress-bar {% if e.ram_percent > 85 %}bg-danger{% elif e.ram_percent > 70 %}bg-warning{% else %}bg-info{% endif %}" style="width: {{ e.ram_percent }}%"></div>
+              </div>
+              <span class="small">{{ e.ram_percent|default:0 }}%</span>
+            </div>
+            <div class="text-secondary small mt-1">{{ e.ram_used_gb|default:0 }} / {{ e.ram_total_gb|default:0 }} GB</div>
+          </td>
+          <td>
+            {% if e.status == 'Online' %}
+              <span class="badge bg-green-lt"><i class="ti ti-circle-check me-1"></i> Online</span>
+            {% elif e.status == 'Stale' %}
+              <span class="badge bg-yellow-lt"><i class="ti ti-clock-pause me-1"></i> Stale</span>
+            {% else %}
+              <span class="badge bg-secondary-lt"><i class="ti ti-circle-x me-1"></i> Offline</span>
+            {% endif %}
+            <div class="text-secondary small mt-1">{{ e.last_seen }}</div>
+          </td>
+          <td>
+            {% if e.open_alerts %}
+              <span class="badge bg-red text-red-fg">{{ e.open_alerts|length }} Open</span>
+            {% else %}
+              <span class="badge bg-green-lt"><i class="ti ti-check me-1"></i> Clear</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            <a href="/endpoint/{{ e.agent_id }}/" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+              <i class="ti ti-eye"></i> View Details
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center py-5 text-secondary">
+            <i class="ti ti-device-laptop-off fs-1 d-block mb-2"></i>
+            Belum ada endpoint yang terhubung. Pastikan agent sudah dijalankan pada komputer target.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function filterEndpoints() {
+    const q = document.getElementById('endpoint-search').value.toLowerCase();
+    document.querySelectorAll('#endpoints-table tbody tr').forEach(r => {
+      r.hidden = !r.innerText.toLowerCase().includes(q);
+    });
+  }
+</script>
+{% endblock %}

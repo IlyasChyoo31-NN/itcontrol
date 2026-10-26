@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Audit Logs{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">Jejak Audit & Kepatuhan</div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <i class="ti ti-file-analytics text-primary"></i> Reports & Audit Logs
+      </h2>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Catatan Riwayat Seluruh Aktivitas Sistem</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter table-hover table-striped">
+      <thead>
+        <tr>
+          <th>Waktu Kejadian (UTC)</th>
+          <th>Aktor</th>
+          <th>Kategori</th>
+          <th>Peristiwa / Aksi</th>
+          <th>Sasaran / Target</th>
+          <th>Rincian Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in logs %}
+        <tr>
+          <td class="text-secondary small font-monospace">{{ l.ts }}</td>
+          <td>
+            <span class="badge bg-secondary-lt">{{ l.actor }}</span>
+          </td>
+          <td><span class="badge bg-blue-lt">{{ l.category }}</span></td>
+          <td class="fw-bold">{{ l.action }}</td>
+          <td><code>{{ l.target }}</code></td>
+          <td class="small text-secondary" style="max-width: 380px; overflow-wrap: break-word;">{{ l.detail }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-5 text-secondary">Belum ada catatan audit log.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

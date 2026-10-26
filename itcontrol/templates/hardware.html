@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Hardware Inventory{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">Aset & Spesifikasi</div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <i class="ti ti-cpu text-primary"></i> Hardware Inventory
+      </h2>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Inventaris Perangkat Keras Seluruh Endpoint</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter table-hover table-striped">
+      <thead>
+        <tr>
+          <th>Endpoint</th>
+          <th>Model / Manufaktur</th>
+          <th>Serial Number</th>
+          <th>Processor</th>
+          <th>RAM Total</th>
+          <th>Disks / Penyimpanan</th>
+          <th class="w-1">Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in eps %}
+        <tr>
+          <td>
+            <div class="fw-bold">{{ e.hostname }}</div>
+            <div class="text-secondary small">{{ e.os_name }} {{ e.os_release }}</div>
+          </td>
+          <td>{{ e.manufacturer|default:'Unknown' }} {{ e.model|default:'' }}</td>
+          <td><code>{{ e.serial_number|default:'Unavailable' }}</code></td>
+          <td>
+            <div>{{ e.cpu }}</div>
+            <div class="text-secondary small">{{ e.cpu_cores|default:'-' }} Logical Cores ({{ e.architecture|default:'x64' }})</div>
+          </td>
+          <td>{{ e.ram_total_gb|default:0 }} GB</td>
+          <td>
+            {% for d in e.disks_list %}
+              <div class="small mb-1">
+                <span class="badge bg-secondary-lt me-1">{{ d.mount }}</span>
+                {{ d.used_gb }}/{{ d.total_gb }} GB ({{ d.percent_used }}%)
+              </div>
+            {% empty %}
+              <span class="text-secondary small">—</span>
+            {% endfor %}
+          </td>
+          <td>
+            <a href="/endpoint/{{ e.agent_id }}?tab=hardware" class="btn btn-sm btn-outline-primary">
+              <i class="ti ti-eye"></i> Detail Hardware
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center py-4 text-secondary">Tidak ada data hardware.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

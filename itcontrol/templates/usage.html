@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Application Usage & Control{% endblock %}
+
+{% block content %}
+<div class="page-header d-print-none mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <div class="page-pretitle text-secondary">Aktivitas Layar & Pengawasan</div>
+      <h2 class="page-title d-flex align-items-center gap-2">
+        <i class="ti ti-clock-play text-primary"></i> Application Usage & Control
+      </h2>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Aplikasi Aktif (Foreground Window) Terkini Seluruh Endpoint</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter table-hover table-striped">
+      <thead>
+        <tr>
+          <th>Endpoint</th>
+          <th>Status Koneksi</th>
+          <th>Aplikasi Aktif (Layar Depan)</th>
+          <th>Judul Window Aktif</th>
+          <th>Durasi Sesi</th>
+          <th class="w-1">Detail & Kontrol</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in eps %}
+        <tr>
+          <td>
+            <div class="fw-bold">{{ e.hostname }}</div>
+            <div class="text-secondary small">{{ e.manufacturer|default:'' }} {{ e.model|default:'' }}</div>
+          </td>
+          <td>
+            <span class="badge {% if e.status == 'Online' %}bg-green-lt{% elif e.status == 'Stale' %}bg-yellow-lt{% else %}bg-secondary-lt{% endif %}">
+              {{ e.status }}
+            </span>
+          </td>
+          <td>
+            <div class="fw-bold text-primary">
+              <i class="ti ti-app-window me-1"></i> {{ e.foreground_app.process|default:'Unavailable' }}
+            </div>
+            <div class="text-secondary small">User: {{ e.foreground_app.user_name|default:'Unknown' }}</div>
+          </td>
+          <td class="text-secondary small text-truncate" style="max-width: 250px;" title="{{ e.foreground_app.window_title }}">
+            {{ e.foreground_app.window_title|default:'No active window' }}
+          </td>
+          <td>
+            <span class="badge bg-teal-lt fs-6">
+              <i class="ti ti-clock me-1"></i> {{ e.foreground_app.active_seconds_display|default:'0s' }}
+            </span>
+          </td>
+          <td>
+            <a href="/endpoint/{{ e.agent_id }}/?tab=usage" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+              <i class="ti ti-adjustments"></i> Detail & Kontrol
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-4 text-secondary">Belum ada data aktivitas aplikasi.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
